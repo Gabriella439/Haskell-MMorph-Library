@@ -83,7 +83,7 @@ class MFunctor t where
     {-| Lift a monad morphism from @m@ to @n@ into a monad morphism from
         @(t m)@ to @(t n)@
     -}
-    hoist :: (Monad n) => (forall a . m a -> n a) -> t m b -> t n b
+    hoist :: (Monad m) => (forall a . m a -> n a) -> t m b -> t n b
 
 instance MFunctor (E.ErrorT e) where
     hoist nat m = E.ErrorT (nat (E.runErrorT m))
