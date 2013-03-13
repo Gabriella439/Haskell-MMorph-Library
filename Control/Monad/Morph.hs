@@ -6,13 +6,13 @@
 
 > morph $ do x <- m  =  do x <- morph m
 >            f x           morph (f x)
->
+> 
 > morph (return x) = return x
 
     ... which are equivalent to the following two functor laws:
 
 > morph . (f >=> g) = morph . f >=> morph . g
->
+> 
 > morph . return = return
 
     Examples of monad morphisms include:
@@ -27,10 +27,9 @@
 
     * 'id'
 
-    Monad morphisms commonly arise when manipulating monad transformer stacks
-    for compatibility with other monad transformer stacks.  The 'MFunctor',
-    'MonadTrans', and 'MMonad' classes define standard ways to change the shape
-    of monad transformer stacks:
+    Monad morphisms commonly arise when manipulating existing monad transformer
+    code for compatibility purposes.  The 'MFunctor', 'MonadTrans', and
+    'MMonad' classes define standard ways to change monad transformer stacks:
 
     * 'lift' introduces a new monad transformer layer of any type.
 
@@ -93,7 +92,7 @@ import Data.Functor.Identity (Identity)
 {-| A functor in the category of monads, using 'hoist' as the analog of 'fmap':
 
 > hoist (f . g) = hoist f . hoist g
->
+> 
 > hoist id = id
 -}
 class MFunctor t where
@@ -136,9 +135,9 @@ instance MFunctor (W'.WriterT w) where
     analog of 'return' and 'embed' as the analog of ('=<<'):
 
 > embed lift = id
->
+> 
 > embed f (lift m) = f m
->
+> 
 > embed g (embed f t) = embed (\m -> embed g (f m)) t
 -}
 class (MFunctor t, MonadTrans t) => MMonad t where
@@ -264,23 +263,23 @@ instance (Monoid w) => MMonad (W'.WriterT w) where
     to be any monad:
 
 > import Data.Functor.Identity
->
+> 
 > generalize :: (Monad m) => Identity a -> m a
 > generalize m = return (runIdentity m)
 
     ... which we can 'hoist' to change @tick@'s base monad:
 
 > hoist :: (Monad m, MFunctor t) => (forall a . m a -> n a) -> t m b -> t n b
->
+> 
 > hoist generalize :: (Monad m, MFunctor t) => t Identity b -> t m b
->
+> 
 > hoist generalize tick :: (Monad m) => StateT Int m ()
 
     This lets us mix @tick@ alongside 'IO' using 'lift':
 
 > import Control.Monad.Morph
 > import Control.Monad.Trans.Class
->
+> 
 > tock                        ::                   StateT Int IO ()
 > tock = do
 >     hoist generalize tick   :: (Monad      m) => StateT Int m  ()
@@ -298,29 +297,29 @@ Tock!
     that something is a monad morphism:
 
 > generalize (return x)
->
+> 
 > -- Definition of 'return' for the Identity monad
 > = generalize (Identity x)
->
+> 
 > -- Definition of 'generalize'
 > = return (runIdentity (Identity x))
->
+> 
 > -- runIdentity (Identity x) = x
 > = return x
 
 > generalize $ do x <- m
 >                 f x
->
+> 
 > -- Definition of (>>=) for the Identity monad
 > = generalize (f (runIdentity m))
->
+> 
 > -- Definition of 'generalize'
 > = return (runIdentity (f (runIdentity m)))
->
+> 
 > -- Monad law: Left identity
 > = do x <- return (runIdentity m)
 >      return (runIdentity (f x))
->
+> 
 > -- Definition of 'generalize' in reverse
 > = do x <- generalize m
 >      generalize (f x)
@@ -333,6 +332,8 @@ Tock!
 
     For example, we might want to combine the following @save@ function:
 
+> import Control.Monad.Trans.Writer
+> 
 > -- i.e. :: StateT Int (WriterT [Int] Identity) ()
 > save    :: StateT Int (Writer  [Int]) ()
 > save = do
@@ -352,6 +353,8 @@ Tock!
     We can mix the two by inserting a 'W.WriterT' layer for @tock@ and
     generalizing @save@'s base monad:
 
+> import Control.Monad
+> 
 > program ::                   StateT Int (WriterT [Int] IO) ()
 > program = replicateM_ 4 $ do
 >     hoist lift tock
@@ -369,8 +372,8 @@ Tock!
 -}
 
 {- $embed
-    Suppose we decided to check all 'IO' exceptions using a combination of 'try'
-    and 'ErrorT':
+    Suppose we decided to @check@ all 'IO' exceptions using a combination of
+    'try' and 'ErrorT':
 
 > import Control.Exception
 > import Control.Monad.Trans.Class
@@ -380,7 +383,7 @@ Tock!
 > check io = ErrorT (try io)
 
     ... but then we forget to use it in one spot, mistakenly using 'lift'
-    instead:
+    instead of @check@:
 
 > program :: ErrorT IOException IO ()
 > program = do
@@ -405,6 +408,7 @@ Tock!
 
     This correctly checks the exceptions that slipped through the cracks:
 
+>>> import Control.Monad.Morph
 >>> runErrorT (embed check program)
 Left test.txt: openFile: does not exist (No such file or directory)
 
