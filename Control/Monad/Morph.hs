@@ -67,6 +67,9 @@ module Control.Monad.Morph (
 
     -- ** Interleaving transformers
     -- $interleave
+
+    -- ** Embedding transformers
+    -- $embed
     ) where
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
@@ -83,6 +86,7 @@ import qualified Control.Monad.Trans.Writer.Strict as W
 import Data.Monoid (Monoid, mappend)
 
 -- For documentation
+import Control.Exception (try)
 import Control.Monad ((=<<), (>=>), (<=<), join)
 import Data.Functor.Identity (Identity)
 
@@ -361,5 +365,47 @@ Tock!
 Tock!
 Tock!
 [1,2,3,4]
+
+-}
+
+{- $embed
+    Suppose we decided to check all 'IO' exceptions using a combination of 'try'
+    and 'ErrorT':
+
+> import Control.Exception
+> import Control.Monad.Trans.Class
+> import Control.Monad.Trans.Error
+> 
+> check :: IO a -> ErrorT IOException IO a
+> check io = ErrorT (try io)
+
+    ... but then we forget to use it in one spot, mistakenly using 'lift'
+    instead:
+
+> program :: ErrorT IOException IO ()
+> program = do
+>     str <- lift $ readFile "test.txt"
+>     check $ putStr str
+
+>>> runErrorT program
+*** Exception: test.txt: openFile: does not exist (No such file or directory)
+
+    How could we go back and fix 'program' without modifying its source code?
+
+    Well, @check@ is a monad morphism, but we can't 'hoist' it to modify the
+    base monad because then we get two 'E.ErrorT' layers instead of one:
+
+> hoist check
+>     :: ErrorT IOException IO a -> ErrorT IOException (ErrorT IOException IO) a
+
+    We'd prefer to 'embed' all newly generated exceptions in the existing
+    'E.ErrorT' layer:
+
+> embed check :: ErrorT IOException IO a -> ErrorT IOException IO a
+
+    This correctly checks the exceptions that slipped through the cracks:
+
+>>> runErrorT (embed check program)
+Left test.txt: openFile: does not exist (No such file or directory)
 
 -}
