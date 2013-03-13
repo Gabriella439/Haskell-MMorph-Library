@@ -27,10 +27,10 @@
 
     * 'id'
 
-    Monad morphisms commonly arise when manipulating monad transformers for
-    compatibility with other monad transformers.  The 'MFunctor', 'MonadTrans',
-    and 'MMonad' classes define standard ways to change the shape of monad
-    transformer stacks:
+    Monad morphisms commonly arise when manipulating monad transformer stacks
+    for compatibility with other monad transformer stacks.  The 'MFunctor',
+    'MonadTrans', and 'MMonad' classes define standard ways to change the shape
+    of monad transformer stacks:
 
     * 'lift' introduces a new monad transformer layer of any type.
 
@@ -55,6 +55,18 @@ module Control.Monad.Morph (
     (<|<),
     (=<|),
     (|>=)
+
+    -- * Tutorial
+    -- $tutorial
+
+    -- ** Generalizing base monads
+    -- $generalize
+
+    -- ** Monad morphisms
+    -- $mmorph
+
+    -- ** Interleaving transformers
+    -- $interleave
     ) where
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
@@ -72,6 +84,7 @@ import Data.Monoid (Monoid, mappend)
 
 -- For documentation
 import Control.Monad ((=<<), (>=>), (<=<), join)
+import Data.Functor.Identity (Identity)
 
 {-| A functor in the category of monads, using 'hoist' as the analog of 'fmap':
 
@@ -208,3 +221,145 @@ instance (Monoid w) => MMonad (W'.WriterT w) where
     embed f m = W'.WriterT (do
         ((a, w1), w2) <- W'.runWriterT (f (W'.runWriterT m))
         return (a, mappend w1 w2) )
+
+{- $tutorial
+    Monad morphisms solve the common problem of fixing monadic code after the
+    fact without modifying the original source code or type signatures.  The
+    following sections illustrate various examples of transparently modifying
+    existing functions.
+-}
+
+{- $generalize
+    Imagine that some library provided the following 'S.State' code:
+
+> import Control.Monad.Trans.State
+> 
+> tick :: State Int ()
+> tick = modify (+1)
+
+    ... but we would prefer to reuse @tick@ within a larger
+    @('S.StateT' Int 'IO')@ block in order to mix in 'IO' actions.
+
+    We could patch the original library to generalize @tick@'s type signature:
+
+> tick :: (Monad m) => StateT Int m ()
+
+    ... but we would prefer not to fork upstream code if possible.  How could
+    we generalize @tick@'s type without modifying the original code?
+
+    We can solve this if we realize that 'S.State' is a type synonym for
+    'S.StateT' with an 'Identity' base monad:
+
+> type State s = StateT s Identity
+
+    ... which means that @tick@'s true type is actually:
+
+> tick :: StateT Int Identity ()
+
+    Now all we need is a function that @generalize@s the 'Identity' base monad
+    to be any monad:
+
+> import Data.Functor.Identity
+>
+> generalize :: (Monad m) => Identity a -> m a
+> generalize m = return (runIdentity m)
+
+    ... which we can 'hoist' to change @tick@'s base monad:
+
+> hoist :: (Monad m, MFunctor t) => (forall a . m a -> n a) -> t m b -> t n b
+>
+> hoist generalize :: (Monad m, MFunctor t) => t Identity b -> t m b
+>
+> hoist generalize tick :: (Monad m) => StateT Int m ()
+
+    This lets us mix @tick@ alongside 'IO' using 'lift':
+
+> import Control.Monad.Morph
+> import Control.Monad.Trans.Class
+>
+> tock                        ::                   StateT Int IO ()
+> tock = do
+>     hoist generalize tick   :: (Monad      m) => StateT Int m  ()
+>     lift $ putStrLn "Tock!" :: (MonadTrans t) => t          IO ()
+
+>>> runStateT tock 0
+Tock!
+((), 1)
+
+-}
+
+{- $mmorph
+    Notice that @generalize@ is a monad morphism, and satisfies the monad
+    morphism laws.  The following two proofs serve as case studies for proving
+    that something is a monad morphism:
+
+> generalize (return x)
+>
+> -- Definition of 'return' for the Identity monad
+> = generalize (Identity x)
+>
+> -- Definition of 'generalize'
+> = return (runIdentity (Identity x))
+>
+> -- runIdentity (Identity x) = x
+> = return x
+
+> generalize $ do x <- m
+>                 f x
+>
+> -- Definition of (>>=) for the Identity monad
+> = generalize (f (runIdentity m))
+>
+> -- Definition of 'generalize'
+> = return (runIdentity (f (runIdentity m)))
+>
+> -- Monad law: Left identity
+> = do x <- return (runIdentity m)
+>      return (runIdentity (f x))
+>
+> -- Definition of 'generalize' in reverse
+> = do x <- generalize m
+>      generalize (f x)
+-}
+
+{- $interleave
+    You can combine 'hoist' and 'lift' to insert arbitrary layers anywhere
+    within a monad transformer stack.  This comes in handy when interleaving two
+    diverse stacks.
+
+    For example, we might want to combine the following @save@ function:
+
+> -- i.e. :: StateT Int (WriterT [Int] Identity) ()
+> save    :: StateT Int (Writer  [Int]) ()
+> save = do
+>     n <- get
+>     lift $ tell [n]
+
+    ... with our previous @tock@ function:
+
+> tock :: StateT Int IO ()
+
+    However, @save@ and @tock@ differ in two ways:
+
+    * @tock@ lacks a 'W.WriterT' layer
+
+    * @save@ has an 'Identity' base monad
+
+    We can mix the two by inserting a 'W.WriterT' layer for @tock@ and
+    generalizing @save@'s base monad:
+
+> program ::                   StateT Int (WriterT [Int] IO) ()
+> program = replicateM_ 4 $ do
+>     hoist lift tock
+>         :: (MonadTrans t) => StateT Int (t             IO) ()
+>     hoist (hoist generalize) save
+>         :: (Monad      m) => StateT Int (WriterT [Int] m ) ()
+
+>>> execWriterT (runStateT program 0)
+Tock!
+Tock!
+Tock!
+Tock!
+[1,2,3,4]
+
+-}
