@@ -64,7 +64,7 @@ module Control.Monad.Morph (
     -- ** Monad morphisms
     -- $mmorph
 
-    -- ** Interleaving transformers
+    -- ** Mixing diverse transformers
     -- $interleave
 
     -- ** Embedding transformers
@@ -85,7 +85,7 @@ import qualified Control.Monad.Trans.Writer.Strict as W
 import Data.Monoid (Monoid, mappend)
 
 -- For documentation
-import Control.Exception (try)
+import Control.Exception (try, IOException)
 import Control.Monad ((=<<), (>=>), (<=<), join)
 import Data.Functor.Identity (Identity)
 
@@ -292,9 +292,10 @@ Tock!
 -}
 
 {- $mmorph
-    Notice that @generalize@ is a monad morphism, and satisfies the monad
-    morphism laws.  The following two proofs serve as case studies for proving
-    that something is a monad morphism:
+    Notice that @generalize@ is a monad morphism, and the following two proofs
+    show how @generalize@ satisfies the monad morphism laws.  You can refer to
+    these proofs as an example for how to prove a function obeys the monad
+    morphism laws:
 
 > generalize (return x)
 > 
@@ -372,7 +373,7 @@ Tock!
 -}
 
 {- $embed
-    Suppose we decided to @check@ all 'IO' exceptions using a combination of
+    Suppose we decided to @check@ all 'IOException's using a combination of
     'try' and 'ErrorT':
 
 > import Control.Exception
@@ -382,8 +383,8 @@ Tock!
 > check :: IO a -> ErrorT IOException IO a
 > check io = ErrorT (try io)
 
-    ... but then we forget to use it in one spot, mistakenly using 'lift'
-    instead of @check@:
+    ... but then we forget to use @check@ in one spot, mistakenly using 'lift'
+    instead:
 
 > program :: ErrorT IOException IO ()
 > program = do
@@ -398,13 +399,16 @@ Tock!
     Well, @check@ is a monad morphism, but we can't 'hoist' it to modify the
     base monad because then we get two 'E.ErrorT' layers instead of one:
 
-> hoist check
->     :: ErrorT IOException IO a -> ErrorT IOException (ErrorT IOException IO) a
+> hoist check :: (MFunctor t) => t IO a -> t (ErrorT IOException IO) a
+>
+> hoist check program :: ErrorT IOException (ErrorT IOException IO) ()
 
     We'd prefer to 'embed' all newly generated exceptions in the existing
     'E.ErrorT' layer:
 
 > embed check :: ErrorT IOException IO a -> ErrorT IOException IO a
+>
+> embed check program :: ErrorT IOException IO ()
 
     This correctly checks the exceptions that slipped through the cracks:
 
