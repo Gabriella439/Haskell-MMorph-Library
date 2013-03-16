@@ -153,6 +153,7 @@ class (MFunctor t, MonadTrans t) => MMonad t where
 -}
 squash :: (Monad m, MMonad t) => t (t m) a -> t m a
 squash = embed id
+{-# INLINABLE squash #-}
 
 infixr 2 >|>, =<|
 infixl 2 <|<, |>=
@@ -167,6 +168,7 @@ infixl 2 <|<, |>=
     -> (forall b . m2 b -> t m3 b)
     ->             m1 c -> t m3 c
 (f >|> g) m = embed g (f m)
+{-# INLINABLE (>|>) #-}
 
 {-| Equivalent to ('>|>') with the arguments flipped
 
@@ -178,6 +180,7 @@ infixl 2 <|<, |>=
     -> (forall a . m1 a -> t m2 a)
     ->             m1 c -> t m3 c
 (g <|< f) m = embed g (f m)
+{-# INLINABLE (<|<) #-}
 
 {-| An infix operator equivalent to 'embed'
 
@@ -185,6 +188,7 @@ infixl 2 <|<, |>=
 -}
 (=<|) :: (Monad n, MMonad t) => (forall a . m a -> t n a) -> t m b -> t n b
 (=<|) = embed
+{-# INLINABLE (=<|) #-}
 
 {-| Equivalent to ('=<|') with the arguments flipped
 
@@ -192,6 +196,7 @@ infixl 2 <|<, |>=
 -}
 (|>=) :: (Monad n, MMonad t) => t m b -> (forall a . m a -> t n a) -> t n b
 t |>= f = embed f t
+{-# INLINABLE (|>=) #-}
 
 instance (E.Error e) => MMonad (E.ErrorT e) where
     embed f m = E.ErrorT (do 

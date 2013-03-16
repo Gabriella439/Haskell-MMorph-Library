@@ -21,3 +21,4 @@ Library
         base         >= 4       && < 5  ,
         transformers >= 0.2.0.0 && < 0.4
     Exposed-Modules: Control.Monad.Morph
+    GHC-Options: -O2
