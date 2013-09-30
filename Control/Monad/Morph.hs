@@ -75,6 +75,7 @@ module Control.Monad.Morph (
 import Control.Applicative.Lift (Lift (Pure, Other))
 import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Monad.Trans.Class (MonadTrans(lift))
+import qualified Control.Monad.Trans.Cont          as C
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.List          as L
@@ -96,13 +97,62 @@ import Control.Exception (try, IOException)
 import Control.Monad ((=<<), (>=>), (<=<), join)
 import Data.Functor.Identity (Identity)
 
+{-| An invariant functor in the category of monads, using 'hoistiso' as the
+analog of @invmap@:
+
+> hoistiso (f, g) . hoistiso (f', g') = hoistiso (f . f', g' . g)
+> 
+> hoistiso id id = id
+-}
+class MInvariant t where
+    {-| Lift a monad isomorphism between @m@ and @n@ into a monad morphism from
+        @(t m)@ to @(t n)@
+    -}
+    hoistiso :: (Monad m) => (forall a . m a -> n a) -> (forall a. n a -> m a) -> t m b -> t n b
+
+instance MInvariant (C.ContT r) where
+    hoistiso nat tan_ m = C.ContT $ (\c -> nat (C.runContT m (\r -> tan_ (c r))))
+
+instance MInvariant (E.ErrorT e) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant I.IdentityT where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant L.ListT where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant M.MaybeT where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (R.ReaderT r) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (RWS.RWST r w s) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (RWS'.RWST r w s) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (S.StateT s) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (S'.StateT s) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (W.WriterT w) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (W'.WriterT w) where
+    hoistiso nat _ = hoist nat
+
 {-| A functor in the category of monads, using 'hoist' as the analog of 'fmap':
 
 > hoist (f . g) = hoist f . hoist g
 > 
 > hoist id = id
 -}
-class MFunctor t where
+class MInvariant t => MFunctor t where
     {-| Lift a monad morphism from @m@ to @n@ into a monad morphism from
         @(t m)@ to @(t n)@
     -}
