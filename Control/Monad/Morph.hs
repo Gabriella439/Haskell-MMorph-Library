@@ -46,6 +46,7 @@
 module Control.Monad.Morph (
     -- * Functors over Monads
     MFunctor(..),
+    generalize,
     -- * Monads over Monads
     MMonad(..),
     MonadTrans(lift),
@@ -83,6 +84,7 @@ import qualified Control.Monad.Trans.State.Strict  as S'
 import qualified Control.Monad.Trans.Writer.Lazy   as W'
 import qualified Control.Monad.Trans.Writer.Strict as W
 import Data.Monoid (Monoid, mappend)
+import Data.Functor.Identity (runIdentity)
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -130,6 +132,11 @@ instance MFunctor (W.WriterT w) where
 
 instance MFunctor (W'.WriterT w) where
     hoist nat m = W'.WriterT (nat (W'.runWriterT m))
+
+-- | A function that @generalize@s the 'Identity' base monad to be any monad.
+generalize :: Monad m => Identity a -> m a
+generalize = return . runIdentity
+{-# INLINABLE generalize #-}
 
 {-| A monad in the category of monads, using 'lift' from 'MonadTrans' as the
     analog of 'return' and 'embed' as the analog of ('=<<'):
