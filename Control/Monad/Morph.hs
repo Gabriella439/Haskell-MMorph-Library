@@ -74,7 +74,6 @@ module Control.Monad.Morph (
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
-import qualified Data.Functor.Identity             as I
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Maybe         as M
 import qualified Control.Monad.Trans.Reader        as R
@@ -85,6 +84,7 @@ import qualified Control.Monad.Trans.State.Strict  as S'
 import qualified Control.Monad.Trans.Writer.Lazy   as W'
 import qualified Control.Monad.Trans.Writer.Strict as W
 import Data.Monoid (Monoid, mappend)
+import Data.Functor.Identity (runIdentity)
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -135,7 +135,8 @@ instance MFunctor (W'.WriterT w) where
 
 -- | A function that @generalize@s the 'Identity' base monad to be any monad.
 generalize :: Monad m => Identity a -> m a
-generalize = return . I.runIdentity
+generalize = return . runIdentity
+{-# INLINABLE generalize #-}
 
 {-| A monad in the category of monads, using 'lift' from 'MonadTrans' as the
     analog of 'return' and 'embed' as the analog of ('=<<'):
