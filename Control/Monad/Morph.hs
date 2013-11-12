@@ -72,6 +72,8 @@ module Control.Monad.Morph (
     -- $embed
     ) where
 
+import Control.Applicative.Lift (Lift (Pure, Other))
+import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Identity      as I
@@ -85,7 +87,9 @@ import qualified Control.Monad.Trans.State.Strict  as S'
 import qualified Control.Monad.Trans.Writer.Lazy   as W'
 import qualified Control.Monad.Trans.Writer.Strict as W
 import Data.Monoid (Monoid, mappend)
+import Data.Functor.Compose (Compose (Compose))
 import Data.Functor.Identity (runIdentity)
+import Data.Functor.Product (Product (Pair))
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -136,6 +140,19 @@ instance MFunctor (W.WriterT w) where
 
 instance MFunctor (W'.WriterT w) where
     hoist nat m = W'.WriterT (nat (W'.runWriterT m))
+
+instance Functor f => MFunctor (Compose f) where
+    hoist nat (Compose f) = Compose (fmap nat f)
+
+instance MFunctor (Product f) where
+    hoist nat (Pair f g) = Pair f (nat g)
+
+instance MFunctor Backwards where
+    hoist nat (Backwards f) = Backwards (nat f)
+
+instance MFunctor Lift where
+    hoist _   (Pure a)  = Pure a
+    hoist nat (Other f) = Other (nat f)
 
 -- | A function that @generalize@s the 'Identity' base monad to be any monad.
 generalize :: Monad m => Identity a -> m a
