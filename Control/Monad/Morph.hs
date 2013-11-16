@@ -100,7 +100,7 @@ import Data.Functor.Identity (Identity)
 {-| An invariant functor in the category of monads, using 'hoistiso' as the
 analog of @invmap@:
 
-> hoistiso (f, g) . hoistiso (f', g') = hoistiso (f . f', g' . g)
+> hoistiso f g . hoistiso f' g' = hoistiso (f . f') (g' . g)
 > 
 > hoistiso id id = id
 -}
@@ -144,6 +144,18 @@ instance MInvariant (W.WriterT w) where
     hoistiso nat _ = hoist nat
 
 instance MInvariant (W'.WriterT w) where
+    hoistiso nat _ = hoist nat
+
+instance Functor f => MInvariant (Compose f) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant (Product f) where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant Backwards where
+    hoistiso nat _ = hoist nat
+
+instance MInvariant Lift where
     hoistiso nat _ = hoist nat
 
 {-| A functor in the category of monads, using 'hoist' as the analog of 'fmap':
