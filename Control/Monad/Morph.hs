@@ -44,6 +44,8 @@
 {-# LANGUAGE Rank2Types #-}
 
 module Control.Monad.Morph (
+    -- * Invariant functors over Monads
+    MInvariant(..),
     -- * Functors over Monads
     MFunctor(..),
     generalize,
