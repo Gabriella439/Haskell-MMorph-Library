@@ -73,7 +73,6 @@ module Control.Monad.Morph (
     ) where
 
 import Control.Applicative.Lift (Lift (Pure, Other))
-import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Identity      as I
@@ -146,9 +145,6 @@ instance Functor f => MFunctor (Compose f) where
 
 instance MFunctor (Product f) where
     hoist nat (Pair f g) = Pair f (nat g)
-
-instance MFunctor Backwards where
-    hoist nat (Backwards f) = Backwards (nat f)
 
 instance MFunctor Lift where
     hoist _   (Pure a)  = Pure a
