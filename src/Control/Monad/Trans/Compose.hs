@@ -1,5 +1,4 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE FlexibleContexts, KindSignatures #-}
 
 {-| Composition of monad transformers. A higher-order version of
     "Data.Functor.Compose".
