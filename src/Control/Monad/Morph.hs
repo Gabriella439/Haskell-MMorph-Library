@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP, Rank2Types #-}
+
 {-| A monad morphism is a natural transformation:
 
 > morph :: forall a . m a -> n a
@@ -41,8 +43,6 @@
 
 -}
 
-{-# LANGUAGE Rank2Types #-}
-
 module Control.Monad.Morph (
     -- * Functors over Monads
     MFunctor(..),
@@ -73,7 +73,6 @@ module Control.Monad.Morph (
     ) where
 
 import Control.Applicative.Lift (Lift (Pure, Other))
-import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Identity      as I
@@ -90,6 +89,9 @@ import Data.Monoid (Monoid, mappend)
 import Data.Functor.Compose (Compose (Compose))
 import Data.Functor.Identity (runIdentity)
 import Data.Functor.Product (Product (Pair))
+#if MIN_VERSION_transformers(0,3,0)
+import Control.Applicative.Backwards (Backwards (Backwards))
+#endif
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -147,8 +149,10 @@ instance Functor f => MFunctor (Compose f) where
 instance MFunctor (Product f) where
     hoist nat (Pair f g) = Pair f (nat g)
 
+#if MIN_VERSION_transformers(0,3,0)
 instance MFunctor Backwards where
     hoist nat (Backwards f) = Backwards (nat f)
+#endif
 
 instance MFunctor Lift where
     hoist _   (Pure a)  = Pure a
