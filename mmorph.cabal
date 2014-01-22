@@ -20,6 +20,6 @@ Library
     Hs-Source-Dirs: src
     Build-Depends:
         base         >= 4       && < 5  ,
-        transformers >= 0.2.0.0 && < 0.4
+        transformers >= 0.3.0.0 && < 0.4
     Exposed-Modules: Control.Monad.Morph, Control.Monad.Trans.Compose
     GHC-Options: -O2
