@@ -72,7 +72,6 @@ module Control.Monad.Morph (
     -- $embed
     ) where
 
-import Control.Applicative.Lift (Lift (Pure, Other))
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Identity      as I
@@ -91,6 +90,7 @@ import Data.Functor.Identity (runIdentity)
 import Data.Functor.Product (Product (Pair))
 #if MIN_VERSION_transformers(0,3,0)
 import Control.Applicative.Backwards (Backwards (Backwards))
+import Control.Applicative.Lift (Lift (Pure, Other))
 #endif
 
 -- For documentation
@@ -152,11 +152,11 @@ instance MFunctor (Product f) where
 #if MIN_VERSION_transformers(0,3,0)
 instance MFunctor Backwards where
     hoist nat (Backwards f) = Backwards (nat f)
-#endif
 
 instance MFunctor Lift where
     hoist _   (Pure a)  = Pure a
     hoist nat (Other f) = Other (nat f)
+#endif
 
 -- | A function that @generalize@s the 'Identity' base monad to be any monad.
 generalize :: Monad m => Identity a -> m a
