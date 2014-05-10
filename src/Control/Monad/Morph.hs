@@ -74,6 +74,9 @@ module Control.Monad.Morph (
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
+#if MIN_VERSION_transformers(0,4,0)
+import qualified Control.Monad.Trans.Except         as Ex
+#endif
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.List          as L
 import qualified Control.Monad.Trans.Maybe         as M
@@ -112,6 +115,11 @@ class MFunctor t where
 
 instance MFunctor (E.ErrorT e) where
     hoist nat m = E.ErrorT (nat (E.runErrorT m))
+
+#if MIN_VERSION_transformers(0,4,0)
+instance MFunctor (Ex.ExceptT e) where
+    hoist nat m = Ex.ExceptT (nat (Ex.runExceptT m))
+#endif
 
 instance MFunctor I.IdentityT where
     hoist nat m = I.IdentityT (nat (I.runIdentityT m))
@@ -237,6 +245,16 @@ instance (E.Error e) => MMonad (E.ErrorT e) where
             Left         e  -> Left e
             Right (Left  e) -> Left e
             Right (Right a) -> Right a ) )
+
+#if MIN_VERSION_transformers(0,4,0)
+instance MMonad (Ex.ExceptT e) where
+    embed f m = Ex.ExceptT (do 
+        x <- Ex.runExceptT (f (Ex.runExceptT m))
+        return (case x of
+            Left         e  -> Left e
+            Right (Left  e) -> Left e
+            Right (Right a) -> Right a ) )
+#endif
 
 instance MMonad I.IdentityT where
     embed f m = f (I.runIdentityT m)
