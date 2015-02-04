@@ -74,9 +74,7 @@ module Control.Monad.Morph (
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
-#if MIN_VERSION_transformers(0,4,0)
 import qualified Control.Monad.Trans.Except         as Ex
-#endif
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.List          as L
 import qualified Control.Monad.Trans.Maybe         as M
@@ -91,10 +89,8 @@ import Data.Monoid (Monoid, mappend)
 import Data.Functor.Compose (Compose (Compose))
 import Data.Functor.Identity (runIdentity)
 import Data.Functor.Product (Product (Pair))
-#if MIN_VERSION_transformers(0,3,0)
 import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Applicative.Lift (Lift (Pure, Other))
-#endif
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -116,10 +112,8 @@ class MFunctor t where
 instance MFunctor (E.ErrorT e) where
     hoist nat m = E.ErrorT (nat (E.runErrorT m))
 
-#if MIN_VERSION_transformers(0,4,0)
 instance MFunctor (Ex.ExceptT e) where
     hoist nat m = Ex.ExceptT (nat (Ex.runExceptT m))
-#endif
 
 instance MFunctor I.IdentityT where
     hoist nat m = I.IdentityT (nat (I.runIdentityT m))
@@ -157,14 +151,12 @@ instance Functor f => MFunctor (Compose f) where
 instance MFunctor (Product f) where
     hoist nat (Pair f g) = Pair f (nat g)
 
-#if MIN_VERSION_transformers(0,3,0)
 instance MFunctor Backwards where
     hoist nat (Backwards f) = Backwards (nat f)
 
 instance MFunctor Lift where
     hoist _   (Pure a)  = Pure a
     hoist nat (Other f) = Other (nat f)
-#endif
 
 -- | A function that @generalize@s the 'Identity' base monad to be any monad.
 generalize :: Monad m => Identity a -> m a
@@ -246,7 +238,6 @@ instance (E.Error e) => MMonad (E.ErrorT e) where
             Right (Left  e) -> Left e
             Right (Right a) -> Right a ) )
 
-#if MIN_VERSION_transformers(0,4,0)
 instance MMonad (Ex.ExceptT e) where
     embed f m = Ex.ExceptT (do 
         x <- Ex.runExceptT (f (Ex.runExceptT m))
@@ -254,7 +245,6 @@ instance MMonad (Ex.ExceptT e) where
             Left         e  -> Left e
             Right (Left  e) -> Left e
             Right (Right a) -> Right a ) )
-#endif
 
 instance MMonad I.IdentityT where
     embed f m = f (I.runIdentityT m)
