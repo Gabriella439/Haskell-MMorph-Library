@@ -19,6 +19,8 @@ import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
+infixr 9 `ComposeT`
+
 -- | Composition of monad transformers.
 newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
     = ComposeT { getComposeT :: f (g m) a }
