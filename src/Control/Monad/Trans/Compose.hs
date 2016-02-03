@@ -1,4 +1,8 @@
-{-# LANGUAGE FlexibleContexts, KindSignatures #-}
+{-# LANGUAGE CPP, FlexibleContexts, KindSignatures #-}
+
+#if __GLASGOW_HASKELL__ >= 706
+{-# LANGUAGE PolyKinds #-}
+#endif
 
 {-| Composition of monad transformers. A higher-order version of
     "Data.Functor.Compose".
@@ -22,7 +26,11 @@ import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 infixr 9 `ComposeT`
 
 -- | Composition of monad transformers.
+#if __GLASGOW_HASKELL__ >= 706
+newtype ComposeT (f :: k1 -> k2 -> *) (g :: k3 -> k1) (m :: k3) (a :: k2)
+#else
 newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
+#endif
     = ComposeT { getComposeT :: f (g m) a }
   deriving (Eq, Ord, Read, Show)
 
