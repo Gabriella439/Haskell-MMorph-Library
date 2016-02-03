@@ -24,6 +24,7 @@ infixr 9 `ComposeT`
 -- | Composition of monad transformers.
 newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
     = ComposeT { getComposeT :: f (g m) a }
+  deriving (Eq, Ord, Read, Show)
 
 instance (MFunctor f, MonadTrans f, MonadTrans g) => MonadTrans (ComposeT f g)
   where
