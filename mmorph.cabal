@@ -1,5 +1,5 @@
 Name: mmorph
-Version: 1.0.9
+Version: 1.1.0
 Cabal-Version: >= 1.8.0.2
 Build-Type: Simple
 License: BSD3
@@ -12,6 +12,7 @@ Synopsis: Monad morphisms
 Description: This library provides monad morphism utilities, most commonly used
     for manipulating monad transformer stacks.
 Category: Control
+Extra-Source-Files: CHANGELOG.md
 Source-Repository head
     Type: git
     Location: https://github.com/Gabriel439/Haskell-MMorph-Library
