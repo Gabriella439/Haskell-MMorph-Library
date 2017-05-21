@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP, RankNTypes #-}
+{-# LANGUAGE CPP, RankNTypes, PolyKinds #-}
 
 {-| A monad morphism is a natural transformation:
 
