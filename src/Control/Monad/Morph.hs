@@ -106,6 +106,9 @@ import Data.Functor.Identity (Identity)
 class MFunctor t where
     {-| Lift a monad morphism from @m@ to @n@ into a monad morphism from
         @(t m)@ to @(t n)@
+
+        The first argument to `hoist` must be a monad morphism, even though the
+        type system does not enforce this
     -}
     hoist :: (Monad m) => (forall a . m a -> n a) -> t m b -> t n b
 
