@@ -1,3 +1,7 @@
+1.1.1
+
+* Increase upper bound on `transformers-compat`
+
 1.1.0
 
 * BREAKING CHANGE: Enable `PolyKinds`
