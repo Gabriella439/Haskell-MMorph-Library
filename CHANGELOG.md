@@ -1,3 +1,7 @@
+1.1.2
+
+* Conditionally disable `Polykinds` to support older versions of GHC
+
 1.1.1
 
 * Increase upper bound on `transformers-compat`
