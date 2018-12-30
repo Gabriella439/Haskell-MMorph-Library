@@ -3,6 +3,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE QuantifiedConstraints #-}
 
 {-| Composition of monad transformers. A higher-order version of
     "Data.Functor.Compose".
@@ -37,9 +38,13 @@ newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
     = ComposeT { getComposeT :: f (g m) a }
   deriving (Eq, Ord, Read, Show)
 
-instance (MFunctor f, MonadTrans f, MonadTrans g) => MonadTrans (ComposeT f g)
-  where
-    lift = ComposeT . hoist lift . lift
+instance (MonadTrans f, MonadTrans g, forall m. Monad m => Monad (g m))
+    => MonadTrans (ComposeT f g) where
+    lift = ComposeT . lift . lift
+
+instance (MFunctor f, MFunctor g, forall m. Monad m => Monad (g m))
+    => MFunctor (ComposeT f g) where
+    hoist f (ComposeT m) = ComposeT (hoist (hoist f) m)
 
 instance Functor (f (g m)) => Functor (ComposeT f g m) where
     fmap f (ComposeT m) = ComposeT (fmap f m)

@@ -1,3 +1,8 @@
+1.2.0
+
+* BREAKING CHANGE: `MonadTrans` instance for `ComposeT f g` now requires `forall m. Monad m => Monad (g m))` instead of `MFunctor f`
+* Add an `MFunctor` instance for `ComposeT`
+
 1.1.2
 
 * Conditionally disable `Polykinds` to support older versions of GHC
