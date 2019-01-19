@@ -3,6 +3,11 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE CPP #-}
+
+#if __GLASGOW_HASKELL__ >= 806
+{-# LANGUAGE QuantifiedConstraints #-}
+#endif
 
 {-| Composition of monad transformers. A higher-order version of
     "Data.Functor.Compose".
@@ -40,6 +45,12 @@ newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
 instance (MFunctor f, MonadTrans f, MonadTrans g) => MonadTrans (ComposeT f g)
   where
     lift = ComposeT . hoist lift . lift
+
+#if __GLASGOW_HASKELL__ >= 806
+instance (MFunctor f, MFunctor g, forall m. Monad m => Monad (g m))
+    => MFunctor (ComposeT f g) where
+    hoist f (ComposeT m) = ComposeT (hoist (hoist f) m)
+#endif
 
 instance Functor (f (g m)) => Functor (ComposeT f g m) where
     fmap f (ComposeT m) = ComposeT (fmap f m)
