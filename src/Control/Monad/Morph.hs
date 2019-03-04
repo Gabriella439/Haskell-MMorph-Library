@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP, RankNTypes #-}
+{-# LANGUAGE MultiParamTypeClasses, FlexibleInstances #-}
 
 #if __GLASGOW_HASKELL__ >= 706
 {-# LANGUAGE PolyKinds #-}
@@ -58,7 +59,9 @@ module Control.Monad.Morph (
     (>|>),
     (<|<),
     (=<|),
-    (|>=)
+    (|>=),
+    -- * monads to monad transformer
+    MTrans(..)
 
     -- * Tutorial
     -- $tutorial
@@ -95,6 +98,7 @@ import Data.Functor.Identity (runIdentity)
 import Data.Functor.Product (Product (Pair))
 import Control.Applicative.Backwards (Backwards (Backwards))
 import Control.Applicative.Lift (Lift (Pure, Other))
+import Data.Tuple (swap)
 
 -- For documentation
 import Control.Exception (try, IOException)
@@ -115,6 +119,54 @@ class MFunctor t where
         type system does not enforce this
     -}
     hoist :: (Monad m) => (forall a . m a -> n a) -> t m b -> t n b
+
+{-| Convert a Monad to an isomorphic transformation of Identity
+> mtrans (a >> b)   = mtrans a >> mtrans b
+-}
+class Monad m => MTrans t m where
+    mtrans :: m a -> t Identity a
+
+instance MTrans I.IdentityT Identity where
+    mtrans = I.IdentityT
+
+instance MTrans M.MaybeT Maybe where
+    mtrans = M.MaybeT <$> pure
+
+instance MTrans M.MaybeT (M.MaybeT Identity) where
+    mtrans = id
+
+instance MTrans (Ex.ExceptT e) (Either e) where
+    mtrans = Ex.except
+
+instance MTrans (Ex.ExceptT e) (Ex.Except e) where
+    mtrans = id
+
+instance (Monoid w) => MTrans (RWS.RWST r w s) (RWS.RWS r w s) where
+    mtrans = id
+
+instance (Monoid w) => MTrans (RWS'.RWST r w s) (RWS'.RWS r w s) where
+    mtrans = id
+
+instance MTrans (R.ReaderT r) (R.Reader r) where
+    mtrans = id
+
+instance MTrans (R.ReaderT r) ((->) r) where
+    mtrans = R.reader
+
+instance MTrans (S.StateT s) (S.State s) where
+    mtrans = id
+
+instance MTrans (S'.StateT s) (S'.State s) where
+    mtrans = id
+
+instance (Monoid w) => MTrans (W.WriterT w) (W.Writer w) where
+    mtrans = id
+
+instance (Monoid w) => MTrans (W'.WriterT w) (W'.Writer w) where
+    mtrans = id
+
+instance (Monoid w) => MTrans (W.WriterT w) (((,) w)) where
+    mtrans = W.writer <$> swap
 
 instance MFunctor (E.ErrorT e) where
     hoist nat m = E.ErrorT (nat (E.runErrorT m))
