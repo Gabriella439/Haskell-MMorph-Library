@@ -68,7 +68,14 @@ instance Alternative (f (g m)) => Alternative (ComposeT f g m) where
 instance Monad (f (g m)) => Monad (ComposeT f g m) where
     return a = ComposeT (return a)
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
+#if __GLASGOW_HASKELL__ < 808
     fail e   = ComposeT (fail e)
+#endif
+
+#if __GLASGOW_HASKELL__ >= 800
+instance MonadFail (f (g m)) => MonadFail (ComposeT f g m) where
+    fail e   = ComposeT (fail e)
+#endif
 
 instance MonadPlus (f (g m)) => MonadPlus (ComposeT f g m) where
     mzero = ComposeT mzero
