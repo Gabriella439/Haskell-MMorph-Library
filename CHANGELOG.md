@@ -1,6 +1,7 @@
 1.1.3
 
 * Add an `MFunctor` instance for `ComposeT` for GHC >= 8.6
+* Add GHC 8.8 support
 
 1.1.2
 
