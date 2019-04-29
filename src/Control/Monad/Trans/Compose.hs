@@ -35,6 +35,11 @@ import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
+#if __GLASGOW_HASKELL__ >= 800
+import Control.Monad.Fail (MonadFail(..))
+import qualified Control.Monad.Fail
+#endif
+
 infixr 9 `ComposeT`
 
 -- | Composition of monad transformers.
@@ -69,12 +74,12 @@ instance Monad (f (g m)) => Monad (ComposeT f g m) where
     return a = ComposeT (return a)
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
 #if __GLASGOW_HASKELL__ < 808
-    fail e   = ComposeT (fail e)
+    fail e   = ComposeT (Prelude.fail e)
 #endif
 
 #if __GLASGOW_HASKELL__ >= 800
 instance MonadFail (f (g m)) => MonadFail (ComposeT f g m) where
-    fail e   = ComposeT (fail e)
+    fail e = ComposeT (Control.Monad.Fail.fail e)
 #endif
 
 instance MonadPlus (f (g m)) => MonadPlus (ComposeT f g m) where
