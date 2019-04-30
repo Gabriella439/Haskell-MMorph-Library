@@ -22,6 +22,7 @@ module Control.Monad.Trans.Compose (
 import Control.Applicative (
     Applicative(pure, (<*>), (*>), (<*)), Alternative(empty, (<|>)) )
 import Control.Monad (MonadPlus(mzero, mplus), liftM)
+import qualified Control.Monad.Fail as Fail
 import Control.Monad.Cont.Class (MonadCont(callCC))
 import Control.Monad.Error.Class (MonadError(throwError, catchError))
 import Control.Monad.Morph (MFunctor(hoist))
@@ -68,7 +69,12 @@ instance Alternative (f (g m)) => Alternative (ComposeT f g m) where
 instance Monad (f (g m)) => Monad (ComposeT f g m) where
     return a = ComposeT (return a)
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
-    fail e   = ComposeT (fail e)
+#if !MIN_VERSION_base(4,13,0)
+    fail e = ComposeT (fail e)
+#endif
+
+instance Fail.MonadFail (f (g m)) => Fail.MonadFail (ComposeT f g m) where
+    fail e   = ComposeT (Fail.fail e)
 
 instance MonadPlus (f (g m)) => MonadPlus (ComposeT f g m) where
     mzero = ComposeT mzero
