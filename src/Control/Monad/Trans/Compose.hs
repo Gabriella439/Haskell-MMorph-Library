@@ -73,11 +73,11 @@ instance Alternative (f (g m)) => Alternative (ComposeT f g m) where
 instance Monad (f (g m)) => Monad (ComposeT f g m) where
     return a = ComposeT (return a)
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
-#if __GLASGOW_HASKELL__ < 808
-    fail e   = ComposeT (Prelude.fail e)
+#if !MIN_VERSION_base(4,11,0)
+    fail = Control.Monad.Fail.fail
 #endif
 
-#if __GLASGOW_HASKELL__ >= 800
+#if MIN_VERSION_base(4,9,0)
 instance MonadFail (f (g m)) => MonadFail (ComposeT f g m) where
     fail e = ComposeT (Control.Monad.Fail.fail e)
 #endif
