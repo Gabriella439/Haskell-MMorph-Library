@@ -75,6 +75,8 @@ instance Monad (f (g m)) => Monad (ComposeT f g m) where
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
 #if !MIN_VERSION_base(4,11,0)
     fail = Control.Monad.Fail.fail
+#else
+    fail e = ComposeT (fail e)
 #endif
 
 #if MIN_VERSION_base(4,9,0)
