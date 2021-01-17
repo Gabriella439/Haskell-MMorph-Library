@@ -35,7 +35,7 @@ import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
-#if __GLASGOW_HASKELL__ >= 800
+#if MIN_VERSION_base(4,9,0)
 import Control.Monad.Fail (MonadFail(..))
 import qualified Control.Monad.Fail
 #endif
