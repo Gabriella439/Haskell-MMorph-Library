@@ -35,7 +35,7 @@ import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
-#if MIN_VERSION_base(4,9,0)
+#if !MIN_VERSION_base(4,11,0)
 import Control.Monad.Fail (MonadFail(..))
 import qualified Control.Monad.Fail
 #endif
@@ -75,14 +75,10 @@ instance Monad (f (g m)) => Monad (ComposeT f g m) where
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
 #if !MIN_VERSION_base(4,11,0)
     fail = Control.Monad.Fail.fail
-#else
-    fail e = ComposeT (fail e)
 #endif
 
-#if MIN_VERSION_base(4,9,0)
 instance MonadFail (f (g m)) => MonadFail (ComposeT f g m) where
-    fail e = ComposeT (Control.Monad.Fail.fail e)
-#endif
+    fail e = ComposeT (fail e)
 
 instance MonadPlus (f (g m)) => MonadPlus (ComposeT f g m) where
     mzero = ComposeT mzero
