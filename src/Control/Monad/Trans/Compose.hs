@@ -37,8 +37,8 @@ import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
 #if !MIN_VERSION_base(4,11,0)
 import Control.Monad.Fail (MonadFail(..))
-import qualified Control.Monad.Fail
 #endif
+import qualified Control.Monad.Fail
 
 infixr 9 `ComposeT`
 
@@ -78,7 +78,7 @@ instance Monad (f (g m)) => Monad (ComposeT f g m) where
 #endif
 
 instance MonadFail (f (g m)) => MonadFail (ComposeT f g m) where
-    fail e = ComposeT (fail e)
+    fail e = ComposeT (Control.Monad.Fail.fail e)
 
 instance MonadPlus (f (g m)) => MonadPlus (ComposeT f g m) where
     mzero = ComposeT mzero
