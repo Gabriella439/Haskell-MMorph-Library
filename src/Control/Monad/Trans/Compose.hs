@@ -70,7 +70,11 @@ instance Alternative (f (g m)) => Alternative (ComposeT f g m) where
     empty = ComposeT empty
     ComposeT a <|> ComposeT b = ComposeT (a <|> b)
 
+#if !MIN_VERSION_base(4,11,0)
+instance MonadFail (f (g m)) => Monad (ComposeT f g m) where
+#else
 instance Monad (f (g m)) => Monad (ComposeT f g m) where
+#endif
     return a = ComposeT (return a)
     m >>= f  = ComposeT (getComposeT m >>= \x -> getComposeT (f x))
 #if !MIN_VERSION_base(4,11,0)
