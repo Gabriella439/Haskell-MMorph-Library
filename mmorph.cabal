@@ -1,6 +1,6 @@
 Name: mmorph
 Version: 1.1.4
-Cabal-Version: >= 1.8.0.2
+Cabal-Version: >= 1.10
 Build-Type: Simple
 License: BSD3
 License-File: LICENSE
@@ -29,3 +29,4 @@ Library
             fail == 4.9.*
     Exposed-Modules: Control.Monad.Morph, Control.Monad.Trans.Compose
     GHC-Options: -O2
+    Default-Language: Haskell2010
