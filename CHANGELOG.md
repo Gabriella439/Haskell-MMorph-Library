@@ -1,3 +1,7 @@
+1.1.4
+
+* Fix `MonadFail`-related code to work for GHCJS
+
 1.1.3
 
 * Add an `MFunctor` instance for `ComposeT` for GHC >= 8.6
