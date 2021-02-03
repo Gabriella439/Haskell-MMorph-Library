@@ -25,6 +25,7 @@ import Control.Applicative (
 import Control.Monad (MonadPlus(mzero, mplus), liftM)
 import Control.Monad.Cont.Class (MonadCont(callCC))
 import Control.Monad.Error.Class (MonadError(throwError, catchError))
+import Control.Monad.Fail (MonadFail(..))
 import Control.Monad.Morph (MFunctor(hoist))
 import Control.Monad.RWS.Class (MonadRWS)
 import Control.Monad.Reader.Class (MonadReader(ask, local, reader))
@@ -35,10 +36,6 @@ import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
-
-#if !MIN_VERSION_base(4,11,0)
-import Control.Monad.Fail (MonadFail(..))
-#endif
 
 infixr 9 `ComposeT`
 
