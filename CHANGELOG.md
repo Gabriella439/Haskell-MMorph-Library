@@ -1,3 +1,7 @@
+1.1.5
+
+* Fix build failures on GHC 8.4 and 8.6
+
 1.1.4
 
 * Fix `MonadFail`-related code to work for GHCJS
