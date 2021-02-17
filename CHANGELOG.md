@@ -1,6 +1,12 @@
 1.1.5
 
 * Fix build failures on GHC 8.4 and 8.6
+* Add support for safe Haskell
+    * Specifically, this marks the `Control.Monad.Trans.Compose` module as
+      `Trustworthy`
+    * The change in 1.1.4 to use `GeneralizedNewtypeDeriving` meant that the
+      `Control.Monad.Trans.Compose` module was no longer inferred as safe
+* Restore `Traversable` instance removed by mistake in 1.1.4
 
 1.1.4 (Blacklisted)
 
