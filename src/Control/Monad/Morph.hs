@@ -1,7 +1,8 @@
-{-# LANGUAGE CPP, RankNTypes #-}
-
+{-# LANGUAGE CPP        #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE Safe       #-}
 #if __GLASGOW_HASKELL__ >= 706
-{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE PolyKinds  #-}
 #endif
 
 {-| A monad morphism is a natural transformation:
