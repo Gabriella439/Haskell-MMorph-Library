@@ -1,10 +1,12 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE KindSignatures             #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE DeriveTraversable          #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE Trustworthy                #-}
 
 #if __GLASGOW_HASKELL__ >= 806
 {-# LANGUAGE QuantifiedConstraints #-}
@@ -51,6 +53,7 @@ newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
     , Ord
     , Read
     , Show
+    , Traversable
     , Monad
     , MonadCont
     , MonadError e
