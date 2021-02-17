@@ -4,6 +4,7 @@
 {-# LANGUAGE KindSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DeriveTraversable #-}
 {-# LANGUAGE CPP #-}
 
 #if __GLASGOW_HASKELL__ >= 806
@@ -51,6 +52,7 @@ newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
     , Ord
     , Read
     , Show
+    , Traversable
     , Monad
     , MonadCont
     , MonadError e
