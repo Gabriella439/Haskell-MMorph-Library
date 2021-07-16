@@ -1,3 +1,8 @@
+1.2.0
+
+* BREAKING CHANGE: Remove instances for `ErrorT` and `ListT`
+  * These types are deprecated
+
 1.1.5
 
 * Fix build failures on GHC 8.4 and 8.6
