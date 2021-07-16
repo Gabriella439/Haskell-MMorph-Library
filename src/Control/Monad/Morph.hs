@@ -78,7 +78,6 @@ module Control.Monad.Morph (
     ) where
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
-import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Except        as Ex
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Maybe         as M
@@ -115,9 +114,6 @@ class MFunctor t where
         type system does not enforce this
     -}
     hoist :: (Monad m) => (forall a . m a -> n a) -> t m b -> t n b
-
-instance MFunctor (E.ErrorT e) where
-    hoist nat m = E.ErrorT (nat (E.runErrorT m))
 
 instance MFunctor (Ex.ExceptT e) where
     hoist nat m = Ex.ExceptT (nat (Ex.runExceptT m))
@@ -233,14 +229,6 @@ infixl 2 <|<, |>=
 (|>=) :: (Monad n, MMonad t) => t m b -> (forall a . m a -> t n a) -> t n b
 t |>= f = embed f t
 {-# INLINABLE (|>=) #-}
-
-instance (E.Error e) => MMonad (E.ErrorT e) where
-    embed f m = E.ErrorT (do
-        x <- E.runErrorT (f (E.runErrorT m))
-        return (case x of
-            Left         e  -> Left e
-            Right (Left  e) -> Left e
-            Right (Right a) -> Right a ) )
 
 instance MMonad (Ex.ExceptT e) where
     embed f m = Ex.ExceptT (do
