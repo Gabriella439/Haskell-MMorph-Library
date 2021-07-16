@@ -9,18 +9,20 @@
 # ... and then Nix will supply the correct Haskell development environment for
 # you
 let
-  config = {
-    packageOverrides = pkgs: {
-      haskellPackages = pkgs.haskellPackages.override {
-        overrides = haskellPackagesNew: haskellPackagesOld: {
-          mmorph = haskellPackagesNew.callPackage ./default.nix { };
-        };
-      };
-    };
+  config = { };
+
+  overlay = pkgsNew: pkgsOld: {
+    haskellPackages = pkgsOld.haskellPackages.override (old: {
+      overrides =
+        pkgsNew.lib.composeExtensions
+          (old.overrides or (_: _: {}))
+          (pkgsNew.haskell.lib.packageSourceOverrides {
+            mmorph = ./.;
+          });
+    });
   };
 
-  pkgs =
-    import <nixpkgs> { inherit config; };
+  pkgs = import <nixpkgs> { inherit config; overlays = [ overlay ]; };
 
 in
   { mmorph = pkgs.haskellPackages.mmorph;
