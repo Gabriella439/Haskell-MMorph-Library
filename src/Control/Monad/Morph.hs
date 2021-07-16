@@ -81,7 +81,6 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 import qualified Control.Monad.Trans.Error         as E
 import qualified Control.Monad.Trans.Except        as Ex
 import qualified Control.Monad.Trans.Identity      as I
-import qualified Control.Monad.Trans.List          as L
 import qualified Control.Monad.Trans.Maybe         as M
 import qualified Control.Monad.Trans.Reader        as R
 import qualified Control.Monad.Trans.RWS.Lazy      as RWS
@@ -125,9 +124,6 @@ instance MFunctor (Ex.ExceptT e) where
 
 instance MFunctor I.IdentityT where
     hoist nat m = I.IdentityT (nat (I.runIdentityT m))
-
-instance MFunctor L.ListT where
-    hoist nat m = L.ListT (nat (L.runListT m))
 
 instance MFunctor M.MaybeT where
     hoist nat m = M.MaybeT (nat (M.runMaybeT m))
@@ -256,11 +252,6 @@ instance MMonad (Ex.ExceptT e) where
 
 instance MMonad I.IdentityT where
     embed f m = f (I.runIdentityT m)
-
-instance MMonad L.ListT where
-    embed f m = L.ListT (do
-        x <- L.runListT (f (L.runListT m))
-        return (concat x))
 
 instance MMonad M.MaybeT where
     embed f m = M.MaybeT (do
