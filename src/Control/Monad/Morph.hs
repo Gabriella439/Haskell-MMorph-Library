@@ -78,6 +78,7 @@ module Control.Monad.Morph (
     ) where
 
 import Control.Monad.Trans.Class (MonadTrans(lift))
+import qualified Control.Monad.Trans.Accum         as A
 import qualified Control.Monad.Trans.Except        as Ex
 import qualified Control.Monad.Trans.Identity      as I
 import qualified Control.Monad.Trans.Maybe         as M
@@ -114,6 +115,9 @@ class MFunctor t where
         type system does not enforce this
     -}
     hoist :: (Monad m) => (forall a . m a -> n a) -> t m b -> t n b
+
+instance MFunctor (A.AccumT w) where
+    hoist nat m = A.AccumT (nat . A.runAccumT m)
 
 instance MFunctor (Ex.ExceptT e) where
     hoist nat m = Ex.ExceptT (nat (Ex.runExceptT m))
@@ -229,6 +233,11 @@ infixl 2 <|<, |>=
 (|>=) :: (Monad n, MMonad t) => t m b -> (forall a . m a -> t n a) -> t n b
 t |>= f = embed f t
 {-# INLINABLE (|>=) #-}
+
+instance Monoid w => MMonad (A.AccumT w) where
+    embed f m = A.AccumT $ \w -> do
+        ((b, wInner), wOuter) <- A.runAccumT (f $ A.runAccumT m w) w
+        return (b, wInner `mappend` wOuter)
 
 instance MMonad (Ex.ExceptT e) where
     embed f m = Ex.ExceptT (do
