@@ -4,10 +4,10 @@ Cabal-Version: >= 1.10
 Build-Type: Simple
 License: BSD3
 License-File: LICENSE
-Copyright: 2013 Gabriel Gonzalez
-Author: Gabriel Gonzalez
-Maintainer: Gabriel439@gmail.com
-Bug-Reports: https://github.com/Gabriel439/Haskell-MMorph-Library/issues
+Copyright: 2013 Gabriella Gonzalez
+Author: Gabriella Gonzalez
+Maintainer: GenuineGabriella@gmail.com
+Bug-Reports: https://github.com/Gabriella439/Haskell-MMorph-Library/issues
 Synopsis: Monad morphisms
 Description: This library provides monad morphism utilities, most commonly used
     for manipulating monad transformer stacks.
@@ -15,7 +15,7 @@ Category: Control
 Extra-Source-Files: CHANGELOG.md
 Source-Repository head
     Type: git
-    Location: https://github.com/Gabriel439/Haskell-MMorph-Library
+    Location: https://github.com/Gabriella439/Haskell-MMorph-Library
 
 Library
     Hs-Source-Dirs: src
