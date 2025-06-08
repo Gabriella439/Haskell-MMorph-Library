@@ -1,3 +1,7 @@
+1.2.1
+
+- `MFunctor` and `MMonad` instances for `AccumT`
+
 1.2.0
 
 * BREAKING CHANGE: Remove instances for `ErrorT` and `ListT`
