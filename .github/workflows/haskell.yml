@@ -38,3 +38,28 @@ jobs:
         cabal build --only-dependencies --enable-tests --enable-benchmarks
     - name: Build
       run: cabal build --enable-tests --enable-benchmarks all
+
+  build-mhs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+    - name: Checkout MicroHs repository
+      uses: actions/checkout@v6
+      with:
+        repository: augustss/MicroHs
+        ref: 166fbe20c8b8469852a0a99816cee9ac487e0780
+        path: mhs
+    - name: Install MicroHs
+      run: |
+        cd mhs
+        make minstall
+        echo "$HOME/.mcabal/bin" >> $GITHUB_PATH
+    - name: Install dependencies
+      run: |
+        mcabal install ghc-compat
+        mcabal install transformers
+        mcabal install --git=https://github.com/ekmett/transformers-compat.git transformers-compat
+        mcabal install mtl
+    - name: Install mmorph
+      run: mcabal install
