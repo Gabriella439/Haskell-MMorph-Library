@@ -13,6 +13,8 @@ Description: This library provides monad morphism utilities, most commonly used
     for manipulating monad transformer stacks.
 Category: Control
 Extra-Doc-Files: CHANGELOG.md
+Tested-With: GHC == 8.10.7, GHC == 9.0.2, GHC == 9.2.8, GHC == 9.4.8, GHC == 9.6.7, GHC == 9.8.4, GHC == 9.10.3, GHC == 9.12.2, GHC == 9.14.1
+
 Source-Repository head
     Type: git
     Location: https://github.com/Gabriella439/Haskell-MMorph-Library
