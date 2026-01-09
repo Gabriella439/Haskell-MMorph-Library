@@ -3,6 +3,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE KindSignatures             #-}
 {-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE StandaloneKindSignatures   #-}
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE DeriveTraversable          #-}
 {-# LANGUAGE CPP                        #-}
@@ -36,13 +37,15 @@ import Control.Monad.Trans.Class (MonadTrans(lift))
 import Control.Monad.Writer.Class (MonadWriter(writer, tell, listen, pass))
 import Control.Monad.IO.Class (MonadIO(liftIO))
 import Data.Foldable (Foldable(fold, foldMap, foldr, foldl, foldr1, foldl1))
+import Data.Kind (Type)
 import Data.Traversable (Traversable(traverse, sequenceA, mapM, sequence))
 import Prelude hiding (foldr, foldl, foldr1, foldl1, mapM, sequence)
 
 infixr 9 `ComposeT`
 
 -- | Composition of monad transformers.
-newtype ComposeT (f :: (* -> *) -> * -> *) (g :: (* -> *) -> * -> *) m a
+type ComposeT :: ((Type -> Type) -> Type -> Type) -> ((Type -> Type) -> Type -> Type) -> (Type -> Type) -> Type -> Type
+newtype ComposeT f g m a
     = ComposeT { getComposeT :: f (g m) a }
     deriving
     ( Alternative
@@ -70,7 +73,7 @@ instance (MFunctor f, MonadTrans f, MonadTrans g) => MonadTrans (ComposeT f g)
   where
     lift = ComposeT . hoist lift . lift
 
-#if __GLASGOW_HASKELL__ >= 806
+#if defined(__MHS__) || __GLASGOW_HASKELL__ >= 806
 instance (MFunctor f, MFunctor g, forall m. Monad m => Monad (g m))
     => MFunctor (ComposeT f g) where
     hoist f (ComposeT m) = ComposeT (hoist (hoist f) m)
