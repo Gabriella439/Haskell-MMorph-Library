@@ -25,7 +25,7 @@ Library
         base                >= 4.14  && < 5  ,
         mtl                 >= 2.1   && < 2.4,
         transformers        >= 0.5   && < 0.7,
-        transformers-compat >= 0.6.1 && < 0.8
+        transformers-compat >= 0.6.1 && < 0.9
     Exposed-Modules: Control.Monad.Morph, Control.Monad.Trans.Compose
     GHC-Options: -O2
     Default-Language: Haskell2010
